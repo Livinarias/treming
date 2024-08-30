@@ -5,6 +5,7 @@ __pycache__/
 /.pytest_cache
 /.ruff_cache
 
+
 # C extensions
 *.so
 
@@ -75,6 +76,7 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+config/odoo.conf
 
 # Backup files
 *~

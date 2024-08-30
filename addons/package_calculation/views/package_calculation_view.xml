@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<odoo>
+
+    <!-- package_calculation form view -->
+    <record id="package_calculation_view_form" model="ir.ui.view">
+        <field name="name">package.calculation.view.form</field>
+        <field name="model">package.calculation</field>
+        <field name="arch" type="xml">
+            <form string="Package Calculation">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="partner_name" />
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_street" />
+                        </group>
+                        <group>
+                            <field name="partner_city" />
+                        </group>
+                    </group>
+                    <group>
+                        <h1>hola</h1>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" />
+                    <field name="activity_ids" />
+                    <field name="message_ids" />
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- package_calculation tree view -->
+    <record id="package_calculation_view_tree" model="ir.ui.view">
+        <field name="name">package.calculation.view.tree</field>
+        <field name="model">package.calculation</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="partner_name" />
+                <field name="partner_street" />
+                <field name="partner_city" />
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="package_calculation_action_window">
+      <field name="name">package calculation</field>
+      <field name="res_model">package.calculation</field>
+      <field name="view_id" ref="package_calculation_view_tree" />
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Top menu item -->
+    <menuitem
+        name="Package Calculation"
+        id="package_calculation.menu_root"
+        groups="group_calculation_package_user"
+    />
+
+    <!-- menu categories -->
+    <menuitem
+        name="Package"
+        id="package_calculation_menu"
+        action="package_calculation_action_window"
+        parent="package_calculation.menu_root"
+    />
+
+    <menuitem
+        id="menu_package_calculation_settings"
+        name="Configuration"
+        action="package_calculation_action_window"
+        parent="package_calculation.menu_root"
+        sequence="100"
+        groups="group_calculation_package_admin"
+    />
+
+</odoo>

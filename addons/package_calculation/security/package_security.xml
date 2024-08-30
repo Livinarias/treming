@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="group_calculation_package_user" model="res.groups">
+        <field name="name">User</field>
+        <field
+            name="category_id"
+            ref="package_calculation.module_category_package_calculation"
+        />
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]" />
+    </record>
+
+    <record id="group_calculation_package_admin" model="res.groups">
+        <field name="name">Admin</field>
+        <field
+            name="category_id"
+            ref="package_calculation.module_category_package_calculation"
+        />
+        <field
+            name="users"
+            eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"
+        />
+    </record>
+
+    <!-- multi -->
+    <record model="ir.rule" id="package_calculation_rule">
+        <field name="name">package calculation multi-company</field>
+        <field
+            name="model_id"
+            search="[('model','=','package.calculation')]"
+            model="ir.model"
+        />
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

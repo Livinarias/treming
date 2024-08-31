@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_package_calculation_user,package.calculation,model_package_calculation,package_calculation.group_calculation_package_user,1,1,1,1
+access_validate_data_wizard_user,validate.data.wizard,model_validate_data_wizard,base.group_user,1,1,1,1

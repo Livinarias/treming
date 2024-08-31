@@ -27,4 +27,4 @@ class ValidateDataWizard(models.TransientModel):
                 "company_type": "person",
             }
         )
-        self.package_calculation_id.write({"partner_id": partner, "state": "done"})
+        self.package_calculation_id.write({"partner_id": partner, "state": "wait"})

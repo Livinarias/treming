@@ -9,7 +9,7 @@
             <form string="Package Calculation">
                 <header>
                     <button
-                        name="action_validate_data"
+                        name="open_wizard"
                         type="object"
                         string="Done Validation"
                         invisible="state != 'draft'"
@@ -42,6 +42,7 @@
                     <div class="oe_title">
                         <h1>
                             <field name="partner_name" readonly="state != 'draft'" />
+                            <field name="partner_id" invisible="1" />
                         </h1>
                     </div>
                     <group>
@@ -51,12 +52,16 @@
                         </group>
                         <group>
                             <field name="partner_street" readonly="state != 'draft'" />
-                            <field name="partner_city" readonly="state != 'draft'" />
+                            <field
+                                name="country_id"
+                                readonly="state != 'draft'"
+                                options="{'no_open': True, 'no_quick_create': True}"
+                            />
                         </group>
                     </group>
                     <group>
                         <field
-                            name="package_ids"
+                            name="packages_ids"
                             widget="many2many_tags"
                             options="{'color_field': 'color'}"
                         />
@@ -101,7 +106,7 @@
                 />
                 <field name="partner_name" />
                 <field name="partner_street" />
-                <field name="partner_city" />
+                <field name="country_id" />
                 <field name="activity_ids" optional="show" widget="list_activity" />
                 <field name="vat_type" optional="hide" />
                 <field name="partner_vat" optional="hide" />
@@ -119,7 +124,7 @@
                     <field name="state" type="col" />
                     <field name="vat_type" interval="month" type="row" />
                     <field name="partner_vat" interval="month" type="row" />
-                    <field name="package_ids" interval="month" type="row" />
+                    <field name="packages_ids" interval="month" type="row" />
             </pivot>
         </field>
     </record>

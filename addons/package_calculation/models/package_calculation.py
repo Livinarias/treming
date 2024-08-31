@@ -9,8 +9,8 @@ class PackageCalculation(models.Model):
 
     partner_name = fields.Char(string="User name", required=True, tracking=True)
     partner_street = fields.Text(string="street name", required=True, tracking=True)
-    partner_city = fields.Many2one(
-        "res.country", string="User city", required=True, tracking=True
+    country_id = fields.Many2one(
+        "res.country", string="User Country", required=True, tracking=True
     )
     vat_type = fields.Many2one(
         "l10n_latam.identification.type",
@@ -30,7 +30,7 @@ class PackageCalculation(models.Model):
         default="draft",
         tracking=True,
     )
-    package_ids = fields.Many2many("product.product", string="Packages Selected")
+    packages_ids = fields.Many2many("product.product", string="Packages Selected")
     delivery_cost = fields.Float(string="Costo de Envío", readonly=True, tracking=True)
     currency_id = fields.Many2one(
         "res.currency",
@@ -42,6 +42,7 @@ class PackageCalculation(models.Model):
     duration = fields.Char(
         readonly=True,
     )
+    partner_id = fields.Many2one("res.partner", string="Partner")
 
     _sql_constraints = [("partner_vat_uniq", "unique(partner_vat)", "Vat must unique.")]
 
@@ -59,10 +60,26 @@ class PackageCalculation(models.Model):
         for rec in self:
             rec.state = "draft"
 
-    def action_validate_data(self):
-        for rec in self:
-            rec.state = "done"
-
     def action_cancel(self):
         for rec in self:
             rec.state = "cancel"
+
+    def open_wizard(self):
+        return {
+            "name": "Open Wizard Package",
+            "type": "ir.actions.act_window",
+            "res_model": "validate.data.wizard",
+            "view_mode": "form",
+            "view_id": self.env.ref(
+                "package_calculation.view_validate_data_wizard_form"
+            ).id,
+            "target": "new",
+            "context": {
+                "default_partner_name": self.partner_name,
+                "default_partner_street": self.partner_street,
+                "default_country_id": self.country_id.id,
+                "default_vat_type": self.vat_type.id,
+                "default_partner_vat": self.partner_vat,
+                "default_package_calculation_id": self.id,
+            },
+        }

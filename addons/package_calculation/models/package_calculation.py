@@ -26,11 +26,22 @@ class PackageCalculation(models.Model):
         default=lambda self: self.env.company,
     )
     state = fields.Selection(
-        [("draft", "Draft"), ("done", "Done"), ("cancel", "Cancel")],
+        [
+            ("draft", "Draft"),
+            ("done", "Done"),
+            ("cancel", "Cancel"),
+            ("wait", "Wait for Localization"),
+        ],
         default="draft",
         tracking=True,
     )
     packages_ids = fields.Many2many("product.product", string="Packages Selected")
+    cost_product_id = fields.Many2one(
+        "product.product",
+        string="Cost Product",
+        required=True,
+    )
+
     delivery_cost = fields.Float(string="Costo de Envío", readonly=True, tracking=True)
     currency_id = fields.Many2one(
         "res.currency",
@@ -65,21 +76,44 @@ class PackageCalculation(models.Model):
             rec.state = "cancel"
 
     def open_wizard(self):
-        return {
-            "name": "Open Wizard Package",
-            "type": "ir.actions.act_window",
-            "res_model": "validate.data.wizard",
-            "view_mode": "form",
-            "view_id": self.env.ref(
-                "package_calculation.view_validate_data_wizard_form"
-            ).id,
-            "target": "new",
-            "context": {
-                "default_partner_name": self.partner_name,
-                "default_partner_street": self.partner_street,
-                "default_country_id": self.country_id.id,
-                "default_vat_type": self.vat_type.id,
-                "default_partner_vat": self.partner_vat,
-                "default_package_calculation_id": self.id,
-            },
-        }
+        if not self.partner_id:
+            return {
+                "name": "Open Wizard Package",
+                "type": "ir.actions.act_window",
+                "res_model": "validate.data.wizard",
+                "view_mode": "form",
+                "view_id": self.env.ref(
+                    "package_calculation.view_validate_data_wizard_form"
+                ).id,
+                "target": "new",
+                "context": {
+                    "default_partner_name": self.partner_name,
+                    "default_partner_street": self.partner_street,
+                    "default_country_id": self.country_id.id,
+                    "default_vat_type": self.vat_type.id,
+                    "default_partner_vat": self.partner_vat,
+                    "default_package_calculation_id": self.id,
+                },
+            }
+        self.state = "wait"
+
+    def action_wait(self):
+        order_line = [
+            (0, 0, {"product_id": line.id, "product_uom_qty": 1})
+            for line in self.packages_ids
+        ]
+        order_line.append(
+            (0, 0, {"product_id": self.cost_product_id.id, "product_uom_qty": 1})
+        )
+        self.env["sale.order"].create(
+            {
+                "partner_id": self.partner_id.id,
+                "company_id": self.company_id.id,
+                "currency_id": self.currency_id.id,
+                "partner_shipping_id": self.partner_id.id,
+                "partner_invoice_id": self.partner_id.id,
+                "order_line": order_line,
+                "note": "Created from package calculation",
+            }
+        )
+        self.state = "done"

@@ -17,6 +17,14 @@
                         data-hotkey="y"
                     />
                     <button
+                        name="action_wait"
+                        type="object"
+                        string="Localice"
+                        invisible="state != 'wait'"
+                        class="oe_highlight"
+                        data-hotkey="y"
+                    />
+                    <button
                         name="action_cancel"
                         type="object"
                         string="Cancel"
@@ -35,7 +43,7 @@
                     <field
                         name="state"
                         widget="statusbar"
-                        statusbar_visible="draft,done,cancel"
+                        statusbar_visible="draft,wait,done,cancel"
                     />
                 </header>
                 <sheet>
@@ -55,7 +63,7 @@
                             <field
                                 name="country_id"
                                 readonly="state != 'draft'"
-                                options="{'no_open': True, 'no_quick_create': True}"
+                                options="{'no_open': True, 'no_create': True}"
                             />
                         </group>
                     </group>
@@ -64,6 +72,11 @@
                             name="packages_ids"
                             widget="many2many_tags"
                             options="{'color_field': 'color'}"
+                        />
+                        <field
+                            name="cost_product_id"
+                            readonly="state != 'draft'"
+                            options="{'no_open': True, 'no_create': True}"
                         />
                     </group>
                     <group>

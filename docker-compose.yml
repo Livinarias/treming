@@ -7,7 +7,7 @@ services:
       - "8069:8069"
     volumes:
       - ./config:/etc/odoo
-      - ./extra-addons:/mnt/extra-addons
+      - ./addons:/mnt/extra-addons
     environment:
       - HOST=db
       - USER=odoo

@@ -7,22 +7,73 @@
         <field name="model">package.calculation</field>
         <field name="arch" type="xml">
             <form string="Package Calculation">
+                <header>
+                    <button
+                        name="action_validate_data"
+                        type="object"
+                        string="Done Validation"
+                        invisible="state != 'draft'"
+                        class="oe_highlight"
+                        data-hotkey="y"
+                    />
+                    <button
+                        name="action_cancel"
+                        type="object"
+                        string="Cancel"
+                        invisible="state == 'cancel'"
+                        class="oe_highlight"
+                        data-hotkey="t"
+                    />
+                    <button
+                        name="action_draft"
+                        type="object"
+                        string="Draft"
+                        invisible="state == 'draft'"
+                        class="oe_highlight"
+                        data-hotkey="u"
+                    />
+                    <field
+                        name="state"
+                        widget="statusbar"
+                        statusbar_visible="draft,done,cancel"
+                    />
+                </header>
                 <sheet>
                     <div class="oe_title">
                         <h1>
-                            <field name="partner_name" />
+                            <field name="partner_name" readonly="state != 'draft'" />
                         </h1>
                     </div>
                     <group>
                         <group>
-                            <field name="partner_street" />
+                        <field name="vat_type" readonly="state != 'draft'" />
+                        <field name="partner_vat" readonly="state != 'draft'" />
                         </group>
                         <group>
-                            <field name="partner_city" />
+                            <field name="partner_street" readonly="state != 'draft'" />
+                            <field name="partner_city" readonly="state != 'draft'" />
                         </group>
                     </group>
                     <group>
-                        <h1>hola</h1>
+                        <field
+                            name="package_ids"
+                            widget="many2many_tags"
+                            options="{'color_field': 'color'}"
+                        />
+                    </group>
+                    <group>
+                        <label for="delivery_cost" />
+                        <div class="o_row">
+                           <field name="delivery_cost" />
+                           <field name="currency_id" />
+                        </div>
+                    </group>
+                    <group>
+                        <label for="delivery_time" />
+                        <div class="o_row">
+                            <field name="delivery_time" />
+                            <field name="duration" />
+                        </div>
                     </group>
                 </sheet>
                 <div class="oe_chatter">
@@ -40,10 +91,64 @@
         <field name="model">package.calculation</field>
         <field name="arch" type="xml">
             <tree>
+                <field
+                    name="state"
+                    widget="badge"
+                    decoration-success="state == 'done'"
+                    decoration-danger="state == 'cancel'"
+                    decoration-info="state == 'draft'"
+                    optional="show"
+                />
                 <field name="partner_name" />
                 <field name="partner_street" />
                 <field name="partner_city" />
+                <field name="activity_ids" optional="show" widget="list_activity" />
+                <field name="vat_type" optional="hide" />
+                <field name="partner_vat" optional="hide" />
             </tree>
+        </field>
+    </record>
+
+    <!-- package.calculation pivot view -->
+    <record id="package_calculation_view_pivot" model="ir.ui.view">
+        <field name="name">package.calculation.view.pivot</field>
+        <field name="model">package.calculation</field>
+        <field name="arch" type="xml">
+            <pivot string="Package Calculation" sample="1">
+                    <field name="partner_name" type="col" />
+                    <field name="state" type="col" />
+                    <field name="vat_type" interval="month" type="row" />
+                    <field name="partner_vat" interval="month" type="row" />
+                    <field name="package_ids" interval="month" type="row" />
+            </pivot>
+        </field>
+    </record>
+
+    <!-- package.calculation kanban view -->
+    <record id="package_calculation_view_kanban" model="ir.ui.view">
+        <field name="name">package.calculation.view.kanban</field>
+        <field name="model">package.calculation</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div
+                            t-attf-class="oe_kanban_content oe_kanban_global_click"
+                        >
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong><field name="partner_name" /></strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="float-end"><field
+                                            name="state"
+                                        /></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
         </field>
     </record>
 
@@ -51,7 +156,7 @@
       <field name="name">package calculation</field>
       <field name="res_model">package.calculation</field>
       <field name="view_id" ref="package_calculation_view_tree" />
-      <field name="view_mode">tree,form</field>
+      <field name="view_mode">tree,form,activity,pivot,graph,kanban</field>
     </record>
 
     <!-- Top menu item -->

@@ -90,7 +90,6 @@
                         <label for="delivery_time" />
                         <div class="o_row">
                             <field name="delivery_time" />
-                            <field name="duration" />
                         </div>
                     </group>
                 </sheet>

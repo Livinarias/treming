@@ -74,7 +74,7 @@ repos:
           - "@prettier/plugin-xml@2.2.0"
         args:
           - --plugin=@prettier/plugin-xml
-        files: \.(css|htm|html|js|json|jsx|less|md|scss|toml|ts)$
+        files: \.(css|htm|html|js|jsx|less|md|scss|toml|ts)$
   - repo: https://github.com/pre-commit/mirrors-eslint
     rev: v8.24.0
     hooks:

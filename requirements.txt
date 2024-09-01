@@ -1,3 +1,3 @@
-copier #
+copier # libreria para copiar contenido, se utilizo para el uso de https://github.com/OCA/oca-addons-repo-template
 pre-commit # libreria para validar los commits antes de crearlos
-ensurepath #
+ensurepath # libreria usada para usar https://github.com/OCA/oca-addons-repo-template

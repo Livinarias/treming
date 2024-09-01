@@ -1,3 +1,7 @@
+import datetime
+
+import pytz
+
 from odoo import api, fields, models
 
 
@@ -6,6 +10,8 @@ class PackageCalculation(models.Model):
     _description = "this module create a package calculation records"
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _rec_name = "partner_name"
+
+    _headers = {"X-RapidAPI-Key": "", "X-RapidAPI-Host": "wft-geo-db.p.rapidapi.com"}
 
     partner_name = fields.Char(string="User name", required=True, tracking=True)
     partner_street = fields.Text(string="street name", required=True, tracking=True)
@@ -42,16 +48,13 @@ class PackageCalculation(models.Model):
         required=True,
     )
 
-    delivery_cost = fields.Float(string="Costo de Envío", readonly=True, tracking=True)
+    delivery_cost = fields.Float(readonly=True, tracking=True)
     currency_id = fields.Many2one(
         "res.currency",
         readonly=True,
     )
-    delivery_time = fields.Char(
-        string="Tiempo de Entrega", readonly=True, tracking=True
-    )
-    duration = fields.Char(
-        readonly=True,
+    delivery_time = fields.Datetime(
+        string="Delivery Date", readonly=True, tracking=True
     )
     partner_id = fields.Many2one("res.partner", string="Partner")
 
@@ -98,12 +101,21 @@ class PackageCalculation(models.Model):
         self.state = "wait"
 
     def action_wait(self):
+        self.calc_differece_timezone()
         order_line = [
             (0, 0, {"product_id": line.id, "product_uom_qty": 1})
             for line in self.packages_ids
         ]
         order_line.append(
-            (0, 0, {"product_id": self.cost_product_id.id, "product_uom_qty": 1})
+            (
+                0,
+                0,
+                {
+                    "product_id": self.cost_product_id.id,
+                    "product_uom_qty": 1,
+                    "price_unit": self.delivery_cost,
+                },
+            )
         )
         self.env["sale.order"].create(
             {
@@ -112,8 +124,42 @@ class PackageCalculation(models.Model):
                 "currency_id": self.currency_id.id,
                 "partner_shipping_id": self.partner_id.id,
                 "partner_invoice_id": self.partner_id.id,
+                "commitment_date": self.delivery_time,
                 "order_line": order_line,
                 "note": "Created from package calculation",
             }
         )
         self.state = "done"
+
+    def consume_api_countries(self, headers):
+        url_countries = (
+            self.env["ir.config_parameter"].sudo().get_param("url_countries")
+        )
+        params = {"countryIds": self.country_id.code}
+        return self.env["api.georef.template"].get_countries(
+            headers, params, url_countries
+        )
+
+    def consume_api_timezone(self):
+        api_key = self.env["ir.config_parameter"].sudo().get_param("geo_db_api_key")
+        headers = self._headers.copy()
+        headers["X-RapidAPI-Key"] = api_key
+        country_data = self.consume_api_countries(headers)
+        data_id = country_data["data"][0].get("wikiDataId", "")
+        url_timezone = self.env["ir.config_parameter"].sudo().get_param("url_timezone")
+        url_timezone = f"{url_timezone}/{data_id}/dateTime"
+        return self.env["api.georef.template"].get_time_zone(headers, url_timezone)
+
+    def calc_differece_timezone(self):
+        country_time = self.consume_api_timezone()["data"]
+        country_time_formatted = country_time[:26] + country_time[-6:]
+        country_time = datetime.datetime.fromisoformat(
+            country_time_formatted.replace("T", " ")
+        )
+        local_time = country_time.astimezone(pytz.timezone(self.env.user.tz))
+        differece_timezone = country_time - local_time
+        hours, _ = divmod(differece_timezone.seconds, 3600)
+        self.delivery_time = fields.Datetime.now() + datetime.timedelta(
+            days=1, hours=hours
+        )
+        self.delivery_cost = 10 if hours > 4 else 0
